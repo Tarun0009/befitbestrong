@@ -180,6 +180,11 @@ model Product {
   orderItems     OrderItem[]
   bundles        BundleItem[]
 
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([isActive, isFeatured])
+  @@index([isActive, isNew])
+  @@index([saleEndsAt])
   @@map("products")
 }
 
@@ -252,6 +257,7 @@ model CartItem {
   variant   ProductVariant @relation(fields: [variantId], references: [id])
 
   @@unique([cartId, variantId])
+  @@index([cartId])
   @@map("cart_items")
 }
 
@@ -287,6 +293,10 @@ model Order {
   items             OrderItem[]
   loyaltyTx         LoyaltyTransaction[]
 
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -306,6 +316,8 @@ model OrderItem {
   variant          ProductVariant? @relation(fields: [variantId], references: [id])
   product          Product?        @relation(fields: [productId], references: [id])
 
+  @@index([orderId])
+  @@index([productId])
   @@map("order_items")
 }
 
@@ -349,6 +361,8 @@ model Review {
   product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([productId, isApproved])
+  @@index([userId])
   @@map("reviews")
 }
 
@@ -364,6 +378,7 @@ model WishlistItem {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  @@index([userId])
   @@map("wishlist_items")
 }
 
@@ -402,6 +417,8 @@ model LoyaltyTransaction {
   user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   order        Order? @relation(fields: [orderId], references: [id])
 
+  @@index([userId])
+  @@index([orderId])
   @@map("loyalty_transactions")
 }
 

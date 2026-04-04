@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Star, TrendingUp, Gift } from "lucide-react";
-import type { LoyaltyTier } from "@prisma/client";
+import type { LoyaltyTier } from ".prisma/client";
 
 const tierColors: Record<LoyaltyTier, string> = {
   IRON: "text-[#8E8E93]",

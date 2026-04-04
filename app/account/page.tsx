@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Dumbbell, Package, Heart, MapPin, Star, LogOut, Zap } from "lucide-react";
+import { Dumbbell, Package, Heart, MapPin, Star, LogOut, Zap, Settings } from "lucide-react";
 
 const navItems = [
   { label: "My Orders", href: "/account/orders", icon: Package, desc: "Track and manage your orders" },
@@ -9,6 +9,7 @@ const navItems = [
   { label: "Addresses", href: "/account/addresses", icon: MapPin, desc: "Manage shipping addresses" },
   { label: "Loyalty Points", href: "/account/loyalty", icon: Star, desc: "View your Iron Points balance" },
   { label: "Subscriptions", href: "/account/subscriptions", icon: Zap, desc: "Manage your Iron Club membership" },
+  { label: "Settings", href: "/account/settings", icon: Settings, desc: "Export data and manage account" },
 ];
 
 export default async function AccountPage() {

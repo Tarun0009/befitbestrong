@@ -6,6 +6,13 @@ import MobileFilters from "@/components/store/MobileFilters";
 import SortSelect from "@/components/store/SortSelect";
 import { SlidersHorizontal } from "lucide-react";
 import { prisma } from "@/lib/db";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shop Gym Equipment & Supplements",
+  description:
+    "Browse premium gym equipment, protein supplements, apparel and workout programs.",
+};
 
 const PRICE_RANGES = [
   { label: "Under ₹1,000", value: "0-1000" },

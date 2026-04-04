@@ -8,6 +8,24 @@ import { Star, Truck, RotateCcw, Shield, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await prisma.product.findFirst({
+    where: { slug },
+    select: { name: true, shortDesc: true, seoTitle: true, seoDescription: true },
+  });
+  if (!product) return { title: "Product Not Found" };
+  return {
+    title: product.seoTitle ?? product.name,
+    description: product.seoDescription ?? product.shortDesc,
+  };
+}
 
 async function getProduct(slug: string) {
   return prisma.product.findFirst({
