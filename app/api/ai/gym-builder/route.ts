@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -40,7 +40,7 @@ Return ONLY a JSON array of product recommendations with no other text. Each ite
 
 Provide 8-12 recommendations, prioritizing based on the user's budget and goals. Use Indian Rupee pricing (₹). Focus on products available in the Indian market.`;
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: "claude-opus-4-6",
     max_tokens: 2048,
     system:

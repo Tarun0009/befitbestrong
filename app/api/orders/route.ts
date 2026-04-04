@@ -5,12 +5,13 @@ import { generateOrderNumber, calculateGST } from "@/lib/utils";
 import { earnPoints, RUPEES_TO_POINTS } from "@/lib/loyalty";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { z } from "zod";
-import Razorpay from "razorpay";
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+async function getRazorpay() {
+  const { default: Razorpay } = await import("razorpay");
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  });
+}
 
 const createOrderSchema = z.object({
   cartId: z.string(),
@@ -80,7 +81,8 @@ export async function POST(req: NextRequest) {
     // Create Razorpay order (for online payments)
     let razorpayOrderId: string | undefined;
     if (data.paymentMethod !== "COD") {
-      const rzpOrder = await razorpay.orders.create({
+      const rzp = await getRazorpay();
+      const rzpOrder = await rzp.orders.create({
         amount: Math.round(total * 100), // paise
         currency: "INR",
         receipt: generateOrderNumber(),

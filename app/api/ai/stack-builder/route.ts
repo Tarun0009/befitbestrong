@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -33,7 +33,7 @@ Return ONLY a JSON array of supplement recommendations with no other text. Each 
 
 Provide 5-8 supplements that fit within the budget and respect dietary restrictions. Use Indian Rupee pricing (₹) based on Indian market rates. Prioritize safety and effectiveness.`;
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: "claude-opus-4-6",
     max_tokens: 2048,
     system:
