@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { LoyaltyTier } from ".prisma/client";
+type LoyaltyTier = "IRON" | "STEEL" | "TITANIUM";
 
 const TIER_THRESHOLDS: Record<LoyaltyTier, number> = {
   IRON: 0,
