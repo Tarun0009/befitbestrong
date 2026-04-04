@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { generateOrderNumber, calculateGST } from "@/lib/utils";
+import { earnPoints, RUPEES_TO_POINTS } from "@/lib/loyalty";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { z } from "zod";
 import Razorpay from "razorpay";
 
@@ -131,6 +133,38 @@ export async function POST(req: NextRequest) {
 
     // Clear cart
     await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    // Grant loyalty points for COD orders immediately (online: on payment confirmation)
+    if (data.paymentMethod === "COD" && session?.user?.id) {
+      const points = Math.floor(subtotal * RUPEES_TO_POINTS);
+      if (points > 0) {
+        await earnPoints(session.user.id, points, `Order ${order.orderNumber}`, "EARN", order.id);
+      }
+    }
+
+    // Send order confirmation email for COD orders (confirmed immediately)
+    if (data.paymentMethod === "COD") {
+      const emailTo = session?.user?.email ?? data.guestEmail;
+      if (emailTo) {
+        const emailItems = cart.items.map((item) => ({
+          productName: item.variant.product.name,
+          variantTitle: [item.variant.option1Value, item.variant.option2Value].filter(Boolean).join(" / ") || undefined,
+          quantity: item.quantity,
+          unitPrice: Number(item.variant.price),
+        }));
+        sendOrderConfirmationEmail(emailTo, {
+          orderNumber: order.orderNumber,
+          total,
+          subtotal,
+          shippingCost,
+          gst,
+          discount,
+          paymentMethod: data.paymentMethod,
+          items: emailItems,
+          shippingAddress: null,
+        }).catch(() => {});
+      }
+    }
 
     return NextResponse.json({
       order: { id: order.id, orderNumber: order.orderNumber, total: order.total },

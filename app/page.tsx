@@ -3,6 +3,7 @@ import { ArrowRight, Zap, Shield, Truck, Star } from "lucide-react";
 import Navbar from "@/components/store/Navbar";
 import Footer from "@/components/store/Footer";
 import ProductCard from "@/components/store/ProductCard";
+import FlashSaleBanner from "@/components/store/FlashSaleBanner";
 
 // ─── Static category data ───────────────────────────────
 const categories = [
@@ -160,6 +161,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ── Flash Sale Banner ── */}
+        <FlashSaleBanner />
 
         {/* ── Category Grid ── */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

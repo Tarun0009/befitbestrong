@@ -9,15 +9,16 @@ import { formatPrice } from "@/lib/utils";
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: { page?: string; q?: string };
+  searchParams: Promise<{ page?: string; q?: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const role = (session.user as { role?: string }).role;
   if (role !== "ADMIN" && role !== "STAFF") redirect("/");
 
-  const page = parseInt(searchParams.page ?? "1");
-  const q = searchParams.q ?? "";
+  const { page: pageParam, q: qParam } = await searchParams;
+  const page = parseInt(pageParam ?? "1");
+  const q = qParam ?? "";
   const take = 20;
   const skip = (page - 1) * take;
 

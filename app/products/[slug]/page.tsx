@@ -10,7 +10,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 async function getProduct(slug: string) {
-  return prisma.product.findUnique({
+  return prisma.product.findFirst({
     where: { slug, isActive: true },
     include: {
       category: { select: { name: true, slug: true } },
@@ -27,8 +27,9 @@ async function getProduct(slug: string) {
   });
 }
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = await getProduct(params.slug);
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProduct(slug);
   if (!product) notFound();
 
   const firstVariant = product.variants[0];

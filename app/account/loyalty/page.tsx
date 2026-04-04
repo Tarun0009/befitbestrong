@@ -3,14 +3,15 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Star, TrendingUp, Gift } from "lucide-react";
+import type { LoyaltyTier } from "@prisma/client";
 
-const tierColors = {
+const tierColors: Record<LoyaltyTier, string> = {
   IRON: "text-[#8E8E93]",
   STEEL: "text-[#C0C0C0]",
   TITANIUM: "text-[#FF5500]",
 };
 
-const tierBenefits = {
+const tierBenefits: Record<LoyaltyTier, string[]> = {
   IRON: ["1 point per ₹1 spent", "Birthday bonus points", "Early access sales"],
   STEEL: ["1.5× points on purchases", "Free shipping above ₹999", "Priority support"],
   TITANIUM: ["2× points on all purchases", "Always free shipping", "Exclusive products", "Personal shopper"],

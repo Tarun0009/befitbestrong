@@ -3,75 +3,95 @@ import Navbar from "@/components/store/Navbar";
 import Footer from "@/components/store/Footer";
 import ProductCard from "@/components/store/ProductCard";
 import MobileFilters from "@/components/store/MobileFilters";
-import { SlidersHorizontal, ChevronDown } from "lucide-react";
+import SortSelect from "@/components/store/SortSelect";
+import { SlidersHorizontal } from "lucide-react";
+import { prisma } from "@/lib/db";
 
-// Placeholder products — will be replaced with DB query
-const PRODUCTS = [
-  {
-    id: "1", name: "Olympic Barbell 20kg — Competition Grade", slug: "olympic-barbell-20kg",
-    brand: "IronForge", image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop",
-    price: 12999, salePrice: 9999, rating: 4.8, reviewCount: 234, stockQuantity: 15, isNew: false,
-  },
-  {
-    id: "2", name: "Adjustable Dumbbell Set 5-25kg", slug: "adjustable-dumbbell-set",
-    brand: "PowerFit", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
-    price: 8499, salePrice: undefined, rating: 4.6, reviewCount: 89, stockQuantity: 3, isNew: true,
-  },
-  {
-    id: "3", name: "Whey Protein Isolate Chocolate 2kg", slug: "whey-protein-isolate-chocolate-2kg",
-    brand: "MuscleTech", image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400&h=400&fit=crop",
-    price: 4999, salePrice: 3799, rating: 4.9, reviewCount: 567, stockQuantity: 42, isNew: false,
-  },
-  {
-    id: "4", name: "Power Cage Squat Rack — Heavy Duty", slug: "power-cage-squat-rack",
-    brand: "BeastGear", image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&h=400&fit=crop",
-    price: 34999, salePrice: 28999, rating: 4.7, reviewCount: 43, stockQuantity: 8, isNew: false,
-  },
-  {
-    id: "5", name: "Resistance Band Set (5 Levels)", slug: "resistance-band-set",
-    brand: "FlexPro", image: "https://images.unsplash.com/photo-1598289431512-b97b0917afb0?w=400&h=400&fit=crop",
-    price: 1299, salePrice: 899, rating: 4.5, reviewCount: 312, stockQuantity: 85, isNew: false,
-  },
-  {
-    id: "6", name: "Creatine Monohydrate Unflavored 500g", slug: "creatine-monohydrate-500g",
-    brand: "NutriScience", image: "https://images.unsplash.com/photo-1559181567-c3190bfa4cfe?w=400&h=400&fit=crop",
-    price: 1999, salePrice: undefined, rating: 4.8, reviewCount: 891, stockQuantity: 60, isNew: false,
-  },
-  {
-    id: "7", name: "Adjustable Weight Bench — Multi-Position", slug: "adjustable-weight-bench",
-    brand: "IronForge", image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=400&fit=crop",
-    price: 15999, salePrice: 12499, rating: 4.6, reviewCount: 78, stockQuantity: 12, isNew: true,
-  },
-  {
-    id: "8", name: "Pre-Workout Energy Formula 300g", slug: "pre-workout-energy-300g",
-    brand: "MuscleTech", image: "https://images.unsplash.com/photo-1579722820308-d74e571900a9?w=400&h=400&fit=crop",
-    price: 2499, salePrice: 1999, rating: 4.4, reviewCount: 445, stockQuantity: 35, isNew: false,
-  },
+const PRICE_RANGES = [
+  { label: "Under ₹1,000", value: "0-1000" },
+  { label: "₹1,000 – ₹5,000", value: "1000-5000" },
+  { label: "₹5,000 – ₹15,000", value: "5000-15000" },
+  { label: "₹15,000+", value: "15000+" },
 ];
 
-const SORT_OPTIONS = [
-  { label: "Best Selling", value: "bestselling" },
-  { label: "Price: Low to High", value: "price-asc" },
-  { label: "Price: High to Low", value: "price-desc" },
-  { label: "Newest", value: "newest" },
-  { label: "Highest Rated", value: "rating" },
-];
-
-const CATEGORIES = [
-  { label: "All", value: "" },
-  { label: "Equipment", value: "equipment" },
-  { label: "Supplements", value: "supplements" },
-  { label: "Apparel", value: "apparel" },
-  { label: "Recovery", value: "recovery" },
-  { label: "Programs", value: "programs" },
-];
-
-export default function ProductsPage({
+export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { category?: string; sort?: string; q?: string };
+  searchParams: Promise<{ category?: string; brand?: string; sort?: string; q?: string; price?: string }>;
 }) {
-  const { category = "", sort = "bestselling", q = "" } = searchParams;
+  const { category = "", brand = "", sort = "bestselling", q = "", price = "" } = await searchParams;
+
+  // Build where clause
+  const where: Record<string, unknown> = { isActive: true };
+  if (category) where.category = { slug: category };
+  if (brand) where.brand = { slug: brand };
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { shortDesc: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  if (price) {
+    const [min, max] = price.split("-");
+    if (max) {
+      where.basePrice = { gte: parseInt(min), lte: parseInt(max) };
+    } else {
+      where.basePrice = { gte: parseInt(min) };
+    }
+  }
+
+  // Build orderBy
+  let orderBy: Record<string, string> = { createdAt: "desc" };
+  if (sort === "price-asc") orderBy = { basePrice: "asc" };
+  if (sort === "price-desc") orderBy = { basePrice: "desc" };
+  if (sort === "newest") orderBy = { createdAt: "desc" };
+
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy,
+      take: 48,
+      include: {
+        brand: { select: { name: true } },
+        images: { take: 1, orderBy: { sortOrder: "asc" } },
+        variants: {
+          where: { isActive: true },
+          take: 1,
+          orderBy: { price: "asc" },
+          select: { price: true, stockQuantity: true },
+        },
+        _count: { select: { reviews: { where: { isApproved: true } } } },
+      },
+    }),
+    prisma.category.findMany({
+      where: { isActive: true, parentId: null },
+      orderBy: { sortOrder: "asc" },
+      select: { name: true, slug: true },
+    }),
+  ]);
+
+  const mappedProducts = products.map((p) => {
+    const variant = p.variants[0];
+    const image = p.images[0]?.url ?? "/placeholder-product.jpg";
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      brand: p.brand?.name,
+      image,
+      price: variant ? Number(variant.price) : Number(p.basePrice),
+      salePrice: p.salePrice ? Number(p.salePrice) : undefined,
+      stockQuantity: variant?.stockQuantity ?? 0,
+      isNew: p.isNew,
+      isFeatured: p.isFeatured,
+    };
+  });
+
+  const heading = q
+    ? `Search: "${q}"`
+    : category
+    ? categories.find((c) => c.slug === category)?.name ?? category
+    : "All Products";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -82,26 +102,16 @@ export default function ProductsPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-(family-name:--font-bebas-neue) text-4xl text-[#F2F2F7] tracking-wide">
-              {q ? `Search: "${q}"` : category ? category.charAt(0).toUpperCase() + category.slice(1) : "All Products"}
+              {heading}
             </h1>
-            <p className="text-[#8E8E93] text-sm mt-1">{PRODUCTS.length} products</p>
+            <p className="text-[#8E8E93] text-sm mt-1">{mappedProducts.length} products</p>
           </div>
 
           {/* Sort */}
-          <div className="relative">
-            <select
-              defaultValue={sort}
-              className="appearance-none bg-[#1C1C1E] border border-[#2C2C2E] text-[#F2F2F7] text-sm rounded px-4 py-2.5 pr-8 focus:outline-none focus:border-[#FF5500] cursor-pointer"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E93] pointer-events-none" />
-          </div>
+          <SortSelect currentSort={sort} />
         </div>
 
-        {/* Mobile Filters button — only visible below lg */}
+        {/* Mobile Filters */}
         <div className="lg:hidden mb-4">
           <MobileFilters category={category} />
         </div>
@@ -117,17 +127,25 @@ export default function ProductsPage({
                   Category
                 </h3>
                 <div className="space-y-1">
-                  {CATEGORIES.map((cat) => (
+                  <a
+                    href="/products"
+                    className={`block px-3 py-2 rounded text-sm transition-colors ${
+                      !category ? "bg-[#FF5500]/10 text-[#FF5500] font-medium" : "text-[#8E8E93] hover:text-[#F2F2F7] hover:bg-[#2C2C2E]"
+                    }`}
+                  >
+                    All
+                  </a>
+                  {categories.map((cat) => (
                     <a
-                      key={cat.value}
-                      href={`/products${cat.value ? `?category=${cat.value}` : ""}`}
+                      key={cat.slug}
+                      href={`/products?category=${cat.slug}${sort !== "bestselling" ? `&sort=${sort}` : ""}`}
                       className={`block px-3 py-2 rounded text-sm transition-colors ${
-                        category === cat.value
+                        category === cat.slug
                           ? "bg-[#FF5500]/10 text-[#FF5500] font-medium"
                           : "text-[#8E8E93] hover:text-[#F2F2F7] hover:bg-[#2C2C2E]"
                       }`}
                     >
-                      {cat.label}
+                      {cat.name}
                     </a>
                   ))}
                 </div>
@@ -139,46 +157,42 @@ export default function ProductsPage({
                   Price Range
                 </h3>
                 <div className="space-y-1">
-                  {[
-                    { label: "Under ₹1,000", value: "0-1000" },
-                    { label: "₹1,000 – ₹5,000", value: "1000-5000" },
-                    { label: "₹5,000 – ₹15,000", value: "5000-15000" },
-                    { label: "₹15,000+", value: "15000+" },
-                  ].map((r) => (
-                    <label key={r.value} className="flex items-center gap-2 px-3 py-1.5 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        className="accent-[#FF5500] w-3.5 h-3.5"
-                      />
-                      <span className="text-[#8E8E93] text-sm group-hover:text-[#F2F2F7] transition-colors">
-                        {r.label}
-                      </span>
-                    </label>
+                  {PRICE_RANGES.map((r) => (
+                    <a
+                      key={r.value}
+                      href={`/products?${category ? `category=${category}&` : ""}price=${r.value}`}
+                      className={`block px-3 py-1.5 text-sm rounded transition-colors ${
+                        price === r.value
+                          ? "text-[#FF5500] font-medium"
+                          : "text-[#8E8E93] hover:text-[#F2F2F7]"
+                      }`}
+                    >
+                      {r.label}
+                    </a>
                   ))}
                 </div>
-              </div>
-
-              {/* In Stock Only */}
-              <div>
-                <label className="flex items-center gap-2 px-3 py-2 cursor-pointer">
-                  <input type="checkbox" className="accent-[#FF5500] w-3.5 h-3.5" />
-                  <span className="text-[#8E8E93] text-sm hover:text-[#F2F2F7] transition-colors">
-                    In Stock Only
-                  </span>
-                </label>
               </div>
             </div>
           </aside>
 
           {/* Products Grid */}
           <div className="flex-1">
-            <Suspense fallback={<ProductGridSkeleton />}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {PRODUCTS.map((product) => (
-                  <ProductCard key={product.id} {...product} />
-                ))}
+            {mappedProducts.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-[#8E8E93] text-lg mb-4">No products found</p>
+                <a href="/products" className="text-[#FF5500] hover:text-[#CC4400] text-sm transition-colors">
+                  Clear filters
+                </a>
               </div>
-            </Suspense>
+            ) : (
+              <Suspense fallback={<ProductGridSkeleton />}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {mappedProducts.map((product) => (
+                    <ProductCard key={product.id} {...product} />
+                  ))}
+                </div>
+              </Suspense>
+            )}
           </div>
         </div>
       </main>

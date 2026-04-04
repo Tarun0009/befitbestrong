@@ -161,6 +161,7 @@ model Product {
   brandId        String?
   basePrice      Decimal          @db.Decimal(10, 2)
   salePrice      Decimal?         @db.Decimal(10, 2)
+  saleEndsAt     DateTime?
   isActive       Boolean          @default(true)
   isFeatured     Boolean          @default(false)
   isNew          Boolean          @default(false)
@@ -177,6 +178,7 @@ model Product {
   reviews        Review[]
   wishlistItems  WishlistItem[]
   orderItems     OrderItem[]
+  bundles        BundleItem[]
 
   @@map("products")
 }
@@ -271,6 +273,7 @@ model Order {
   razorpayOrderId   String?
   razorpayPaymentId String?
   couponCode        String?
+  affiliateCode     String?
   notes             String?
   shippingAddressId String?
   trackingNumber    String?
@@ -456,4 +459,47 @@ model Referral {
   referred     User?    @relation("ReferredUser", fields: [referredId], references: [id])
 
   @@map("referrals")
+}
+
+// ─── BUNDLES ─────────────────────────────────────────────
+
+model Bundle {
+  id           String       @id @default(uuid())
+  name         String
+  slug         String       @unique
+  description  String?      @db.Text
+  imageUrl     String?
+  price        Decimal      @db.Decimal(10, 2)
+  comparePrice Decimal?     @db.Decimal(10, 2)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  items        BundleItem[]
+
+  @@map("bundles")
+}
+
+model BundleItem {
+  id        String  @id @default(uuid())
+  bundleId  String
+  productId String
+  quantity  Int     @default(1)
+  bundle    Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("bundle_items")
+}
+
+// ─── AFFILIATES ──────────────────────────────────────────
+
+model Affiliate {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  promoCode     String   @unique
+  commissionPct Decimal  @db.Decimal(5, 2) @default(10)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@map("affiliates")
 }
