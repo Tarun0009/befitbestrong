@@ -1,26 +1,149 @@
 @import "tailwindcss";
 
+/* ─── BRAND DESIGN TOKENS ─────────────────────────────── */
+@theme {
+  /* Brand Colors */
+  --color-forge-orange: #FF5500;
+  --color-ember: #CC4400;
+  --color-iron-black: #0A0A0A;
+  --color-dark-steel: #1C1C1E;
+  --color-gunmetal: #2C2C2E;
+  --color-chalk-white: #F2F2F7;
+  --color-silver: #8E8E93;
+  --color-power-green: #1A7A4A;
+  --color-warning-red: #C0392B;
+  --color-blueprint-blue: #0A4FA6;
+
+  /* Semantic */
+  --color-background: #0A0A0A;
+  --color-foreground: #F2F2F7;
+  --color-surface: #1C1C1E;
+  --color-surface-2: #2C2C2E;
+  --color-muted: #8E8E93;
+  --color-primary: #FF5500;
+  --color-primary-hover: #CC4400;
+  --color-success: #1A7A4A;
+  --color-error: #C0392B;
+  --color-info: #0A4FA6;
+
+  /* Fonts */
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* ─── BASE STYLES ─────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0A0A0A;
+  --foreground: #F2F2F7;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── TYPOGRAPHY ──────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ─── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1C1C1E;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF5500;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CC4400;
+}
+
+/* ─── SELECTION ───────────────────────────────────────── */
+::selection {
+  background: #FF5500;
+  color: #F2F2F7;
+}
+
+/* ─── UTILITY CLASSES ─────────────────────────────────── */
+.price-tag {
+  font-family: "JetBrains Mono", monospace;
+  color: #FF5500;
+  font-weight: 700;
+}
+
+.price-original {
+  font-family: "JetBrains Mono", monospace;
+  text-decoration: line-through;
+  color: #8E8E93;
+}
+
+.hero-heading {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  background: #FF5500;
+  color: #F2F2F7;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: background 0.2s ease;
+}
+.btn-primary:hover {
+  background: #CC4400;
+}
+
+/* ─── CARD ────────────────────────────────────────────── */
+.card-dark {
+  background: #1C1C1E;
+  border: 1px solid #2C2C2E;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-dark:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 85, 0, 0.12);
+}
+
+/* ─── BADGE ───────────────────────────────────────────── */
+.badge-orange {
+  background: #FF5500;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badge-green {
+  background: #1A7A4A;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
 }

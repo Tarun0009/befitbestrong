@@ -1,0 +1,126 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Dumbbell, Eye, EyeOff } from "lucide-react";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (!res.ok) {
+      setError(data.error ?? "Registration failed. Please try again.");
+    } else {
+      router.push("/login?registered=true");
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center px-4">
+      <Link href="/" className="flex items-center gap-2 mb-10">
+        <Dumbbell className="w-7 h-7 text-[#FF5500]" />
+        <span className="font-(family-name:--font-bebas-neue) text-3xl tracking-wider">BeFitBeStrong</span>
+      </Link>
+
+      <div className="w-full max-w-sm">
+        <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-2xl p-8">
+          <h1 className="font-(family-name:--font-bebas-neue) text-3xl text-[#F2F2F7] tracking-wide mb-1">
+            Create Account
+          </h1>
+          <p className="text-[#8E8E93] text-sm mb-8">Join 50,000+ athletes on BeFitBeStrong</p>
+
+          {error && (
+            <div className="bg-[#C0392B]/10 border border-[#C0392B]/20 text-[#C0392B] text-sm px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {[
+              { label: "Full Name", name: "name", type: "text", placeholder: "John Doe" },
+              { label: "Email", name: "email", type: "email", placeholder: "you@example.com" },
+              { label: "Phone (optional)", name: "phone", type: "tel", placeholder: "+91 9999999999" },
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="block text-[#8E8E93] text-xs uppercase tracking-widest font-bold mb-1.5">
+                  {field.label}
+                </label>
+                <input
+                  type={field.type}
+                  name={field.name}
+                  value={form[field.name as keyof typeof form]}
+                  onChange={handleChange}
+                  required={field.name !== "phone"}
+                  placeholder={field.placeholder}
+                  className="w-full bg-[#2C2C2E] border border-[#2C2C2E] focus:border-[#FF5500] text-[#F2F2F7] rounded-lg px-4 py-3 text-sm outline-none transition-colors placeholder:text-[#8E8E93]/50"
+                />
+              </div>
+            ))}
+
+            <div>
+              <label className="block text-[#8E8E93] text-xs uppercase tracking-widest font-bold mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  minLength={6}
+                  placeholder="At least 6 characters"
+                  className="w-full bg-[#2C2C2E] border border-[#2C2C2E] focus:border-[#FF5500] text-[#F2F2F7] rounded-lg px-4 py-3 pr-11 text-sm outline-none transition-colors placeholder:text-[#8E8E93]/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E8E93] hover:text-[#F2F2F7] transition-colors"
+                >
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#FF5500] hover:bg-[#CC4400] disabled:opacity-60 text-white font-bold uppercase tracking-widest py-3.5 rounded-lg transition-colors text-sm mt-2"
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+          </form>
+
+          <p className="text-center text-[#8E8E93] text-sm mt-6">
+            Already have an account?{" "}
+            <Link href="/login" className="text-[#FF5500] hover:text-[#CC4400] font-medium transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
