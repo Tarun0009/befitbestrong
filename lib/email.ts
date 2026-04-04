@@ -1,7 +1,9 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.RESEND_FROM ?? "BeFitBeStrong <noreply@befitbestrong.com>";
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+const FROM = () => process.env.RESEND_FROM ?? "BeFitBeStrong <noreply@befitbestrong.com>";
 
 // ── Shared HTML shell ───────────────────────────────────────────────────────
 
@@ -95,8 +97,8 @@ export async function sendWelcomeEmail(to: string, name: string) {
     </p>
   `;
 
-  return resend.emails.send({
-    from: FROM,
+  return getResend().emails.send({
+    from: FROM(),
     to,
     subject: "Welcome to BeFitBeStrong — Let's Get to Work",
     html: shell("Welcome to BeFitBeStrong", body),
@@ -189,8 +191,8 @@ export async function sendOrderConfirmationEmail(to: string, order: OrderEmailDa
     </p>
   `;
 
-  return resend.emails.send({
-    from: FROM,
+  return getResend().emails.send({
+    from: FROM(),
     to,
     subject: `Order Confirmed — #${order.orderNumber}`,
     html: shell("Order Confirmed", body),
@@ -239,8 +241,8 @@ export async function sendShippingConfirmationEmail(to: string, order: ShippingE
     </p>
   `;
 
-  return resend.emails.send({
-    from: FROM,
+  return getResend().emails.send({
+    from: FROM(),
     to,
     subject: `Your Order #${order.orderNumber} Has Shipped!`,
     html: shell("Order Shipped", body),
@@ -289,8 +291,8 @@ export async function sendAbandonedCartEmail(to: string, name: string, items: Ca
     </p>
   `;
 
-  return resend.emails.send({
-    from: FROM,
+  return getResend().emails.send({
+    from: FROM(),
     to,
     subject: `${name}, your cart misses you`,
     html: shell("Complete Your Order", body),
