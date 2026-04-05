@@ -1,24 +1,34 @@
+export const dynamic = "force-dynamic";
+
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? "https://befitbestrong.in";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories, bundles] = await Promise.all([
-    prisma.product.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.category.findMany({
-      where: { isActive: true },
-      select: { slug: true },
-    }),
-    prisma.bundle.findMany({
-      where: { isActive: true },
-      select: { slug: true, createdAt: true },
-    }),
-  ]);
+  let products: { slug: string; updatedAt: Date }[] = [];
+  let categories: { slug: string }[] = [];
+  let bundles: { slug: string; createdAt: Date }[] = [];
+
+  try {
+    [products, categories, bundles] = await Promise.all([
+      prisma.product.findMany({
+        where: { isActive: true },
+        select: { slug: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.category.findMany({
+        where: { isActive: true },
+        select: { slug: true },
+      }),
+      prisma.bundle.findMany({
+        where: { isActive: true },
+        select: { slug: true, createdAt: true },
+      }),
+    ]);
+  } catch {
+    // DB unreachable at build time — return static routes only
+  }
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
