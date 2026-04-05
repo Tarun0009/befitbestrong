@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -21,15 +23,16 @@ const ALL_STATUSES = ["PENDING", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", 
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: { status?: string; page?: string };
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const role = (session.user as { role?: string }).role;
   if (role !== "ADMIN" && role !== "STAFF") redirect("/");
 
-  const status = searchParams.status as typeof ALL_STATUSES[number] | undefined;
-  const page = parseInt(searchParams.page ?? "1");
+  const { status: statusParam, page: pageParam } = await searchParams;
+  const status = statusParam as typeof ALL_STATUSES[number] | undefined;
+  const page = parseInt(pageParam ?? "1");
   const take = 20;
   const skip = (page - 1) * take;
 

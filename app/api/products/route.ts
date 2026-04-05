@@ -4,6 +4,16 @@ import { prisma } from "@/lib/db";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+
+    // meta=1 → return categories + brands for admin forms
+    if (searchParams.get("meta") === "1") {
+      const [categories, brands] = await Promise.all([
+        prisma.category.findMany({ where: { isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+        prisma.brand.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      ]);
+      return NextResponse.json({ categories, brands });
+    }
+
     const category = searchParams.get("category") ?? undefined;
     const brand = searchParams.get("brand") ?? undefined;
     const sort = searchParams.get("sort") ?? "bestselling";

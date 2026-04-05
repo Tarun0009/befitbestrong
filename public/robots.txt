@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block admin and account routes
+Disallow: /admin/
+Disallow: /account/
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Sitemap
+Sitemap: https://befitbestrong.in/sitemap.xml

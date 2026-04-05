@@ -8,10 +8,13 @@ const navItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Orders", href: "/admin/orders" },
   { label: "Products", href: "/admin/products" },
+  { label: "Bundles", href: "/admin/bundles" },
   { label: "Inventory", href: "/admin/inventory" },
   { label: "Customers", href: "/admin/customers" },
+  { label: "Reviews", href: "/admin/reviews" },
   { label: "Marketing", href: "/admin/marketing" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Affiliates", href: "/admin/affiliates" },
 ];
 
 interface AdminLayoutProps {

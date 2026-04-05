@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Heart, ShoppingCart, X } from "lucide-react";
+import { Heart, ShoppingCart, X } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface WishlistProduct {
@@ -39,24 +39,20 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="w-6 h-6 border-2 border-[#FF5500] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/account" className="text-[#8E8E93] hover:text-[#FF5500] transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="font-(family-name:--font-bebas-neue) text-2xl text-[#F2F2F7] tracking-wide">
-            My Wishlist
-          </h1>
-          <span className="text-[#8E8E93] text-sm">({items.length} items)</span>
-        </div>
+    <div className="max-w-4xl">
+      <div className="flex items-baseline gap-3 mb-6">
+        <h1 className="font-(family-name:--font-bebas-neue) text-3xl text-[#F2F2F7] tracking-wide">
+          My Wishlist
+        </h1>
+        <span className="text-[#8E8E93] text-sm">{items.length} items</span>
+      </div>
 
         {items.length === 0 ? (
           <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-2xl p-12 text-center">
@@ -113,7 +109,7 @@ export default function WishlistPage() {
             })}
           </div>
         )}
-      </div>
     </div>
   );
 }
+

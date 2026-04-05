@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans, Bebas_Neue, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
+import CookieConsent from "@/components/store/CookieConsent";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -53,7 +55,10 @@ export default function RootLayout({
       className={`${dmSans.variable} ${bebasNeue.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col bg-[#0A0A0A] text-[#F2F2F7] font-(family-name:--font-dm-sans)">
-        {children}
+        <Providers>
+          {children}
+          <CookieConsent />
+        </Providers>
       </body>
     </html>
   );

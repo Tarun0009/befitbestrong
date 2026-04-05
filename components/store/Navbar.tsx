@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { ShoppingCart, Search, User, Menu, X, Dumbbell } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/components/Providers";
 
 const categories = [
   { name: "Equipment", href: "/products?category=equipment" },
@@ -12,11 +14,57 @@ const categories = [
   { name: "Programs", href: "/products?category=programs" },
 ];
 
-export default function Navbar({ cartCount = 0 }: { cartCount?: number }) {
+export default function Navbar() {
+  const { cartCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen]);
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) {
+      router.push(`/search?q=${encodeURIComponent(q)}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-[#1C1C1E]/95 backdrop-blur border-b border-[#2C2C2E]">
+      {/* Expandable search bar */}
+      {searchOpen && (
+        <div className="border-b border-[#2C2C2E] bg-[#1C1C1E] px-4 py-2">
+          <form onSubmit={handleSearchSubmit} className="max-w-7xl mx-auto flex items-center gap-3">
+            <Search className="w-4 h-4 text-[#8E8E93] shrink-0" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products, brands, categories..."
+              className="flex-1 bg-transparent text-[#F2F2F7] placeholder-[#8E8E93] text-sm focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+              className="p-1 text-[#8E8E93] hover:text-[#FF5500] transition-colors"
+              aria-label="Close search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -48,13 +96,13 @@ export default function Navbar({ cartCount = 0 }: { cartCount?: number }) {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/search"
-              className="p-2 text-[#8E8E93] hover:text-[#FF5500] transition-colors"
+            <button
+              onClick={() => setSearchOpen((prev) => !prev)}
+              className={`p-2 transition-colors ${searchOpen ? "text-[#FF5500]" : "text-[#8E8E93] hover:text-[#FF5500]"}`}
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
-            </Link>
+            </button>
 
             <Link
               href="/account"
@@ -92,6 +140,29 @@ export default function Navbar({ cartCount = 0 }: { cartCount?: number }) {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-[#1C1C1E] border-t border-[#2C2C2E] px-4 py-4 flex flex-col gap-3">
+          {/* Mobile search */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = searchQuery.trim();
+              if (q) {
+                router.push(`/search?q=${encodeURIComponent(q)}`);
+                setMenuOpen(false);
+                setSearchQuery("");
+              }
+            }}
+            className="flex items-center gap-2 bg-[#2C2C2E] rounded-lg px-3 py-2 mb-1"
+          >
+            <Search className="w-4 h-4 text-[#8E8E93] shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              className="flex-1 bg-transparent text-[#F2F2F7] placeholder-[#8E8E93] text-sm focus:outline-none"
+            />
+          </form>
+
           {categories.map((cat) => (
             <Link
               key={cat.name}

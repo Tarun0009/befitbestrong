@@ -1,23 +1,27 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ProductToggle from "@/components/admin/ProductToggle";
 import { Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: { page?: string; q?: string };
+  searchParams: Promise<{ page?: string; q?: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const role = (session.user as { role?: string }).role;
   if (role !== "ADMIN" && role !== "STAFF") redirect("/");
 
-  const page = parseInt(searchParams.page ?? "1");
-  const q = searchParams.q ?? "";
+  const { page: pageParam, q: qParam } = await searchParams;
+  const page = parseInt(pageParam ?? "1");
+  const q = qParam ?? "";
   const take = 20;
   const skip = (page - 1) * take;
 
@@ -104,8 +108,13 @@ export default async function AdminProductsPage({
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <Link href={`/admin/products/${p.id}/edit`} className="text-xs text-[#FF5500] hover:text-[#CC4400] transition-colors">Edit</Link>
+                        <div className="flex items-center gap-2">
+                          <ProductToggle
+                            productId={p.id}
+                            isFeatured={p.isFeatured}
+                            isActive={p.isActive}
+                            isNew={p.isNew}
+                          />
                           <Link href={`/products/${p.slug}`} target="_blank" className="text-xs text-[#8E8E93] hover:text-[#F2F2F7] transition-colors">View</Link>
                         </div>
                       </td>
