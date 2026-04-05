@@ -407,7 +407,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Loyalty Points */}
-                  {(session?.user || true) && (
+                  {session?.user && (
                     <div className="mt-4 bg-[#FF5500]/5 border border-[#FF5500]/20 rounded-lg px-4 py-3 text-center">
                       <p className="text-[#FF5500] text-xs font-medium">
                         You&apos;ll earn{" "}

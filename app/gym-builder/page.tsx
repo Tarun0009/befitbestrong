@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Dumbbell, ChevronRight, ChevronLeft, Loader2, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/store/Navbar";
@@ -45,6 +46,7 @@ const priorityStyles: Record<string, { badge: string; border: string }> = {
 };
 
 export default function GymBuilderPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [spaceType, setSpaceType] = useState("");
   const [budget, setBudget] = useState("");
@@ -88,8 +90,7 @@ export default function GymBuilderPage() {
   }
 
   function handleAddAllToCart() {
-    // Placeholder — in a real app, we'd add matched products to cart
-    alert("Feature coming soon: Adding all recommended products to cart!");
+    router.push("/products");
   }
 
   const stepTitles: Record<Step, string> = {

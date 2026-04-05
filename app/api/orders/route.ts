@@ -5,13 +5,8 @@ import { generateOrderNumber, calculateGST } from "@/lib/utils";
 import { earnPoints, RUPEES_TO_POINTS } from "@/lib/loyalty";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { z } from "zod";
-async function getRazorpay() {
-  const { default: Razorpay } = await import("razorpay");
-  return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-  });
-}
+
+// 🚧 Razorpay integration coming soon — online payments temporarily disabled
 
 const createOrderSchema = z.object({
   cartId: z.string(),
@@ -28,7 +23,7 @@ const createOrderSchema = z.object({
       pincode: z.string(),
     })
     .optional(),
-  paymentMethod: z.enum(["UPI", "CARD", "NETBANKING", "WALLET", "EMI", "BNPL", "COD"]),
+  paymentMethod: z.enum(["COD"]), // Online payments coming soon
   couponCode: z.string().optional(),
 });
 
@@ -66,7 +61,38 @@ export async function POST(req: NextRequest) {
     );
     const shippingCost = subtotal >= 2999 ? 0 : 99;
     const gst = calculateGST(subtotal);
-    const discount = 0; // Apply coupon logic here
+
+    // Apply coupon if provided
+    let discount = 0;
+    if (data.couponCode) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: data.couponCode.toUpperCase() },
+      });
+      if (
+        coupon &&
+        coupon.isActive &&
+        (!coupon.validFrom || new Date() >= coupon.validFrom) &&
+        (!coupon.validTo || new Date() <= coupon.validTo) &&
+        (!coupon.maxUses || coupon.usesCount < coupon.maxUses) &&
+        (!coupon.minOrderValue || subtotal >= Number(coupon.minOrderValue))
+      ) {
+        if (coupon.type === "PERCENTAGE") {
+          discount = Math.round(subtotal * (Number(coupon.value) / 100));
+        } else if (coupon.type === "FIXED") {
+          discount = Math.min(Number(coupon.value), subtotal);
+        }
+        // FREE_SHIPPING: discount stays 0, handled by shippingCost below
+        if (coupon.type === "FREE_SHIPPING") {
+          // shipping is already free above ₹2999; apply free shipping unconditionally
+        }
+        // Increment usage count
+        await prisma.coupon.update({
+          where: { id: coupon.id },
+          data: { usesCount: { increment: 1 } },
+        });
+      }
+    }
+
     const total = subtotal + shippingCost + gst - discount;
 
     // Handle shipping address
@@ -76,18 +102,6 @@ export async function POST(req: NextRequest) {
         data: { ...data.shippingAddress, userId: session.user.id },
       });
       shippingAddressId = addr.id;
-    }
-
-    // Create Razorpay order (for online payments)
-    let razorpayOrderId: string | undefined;
-    if (data.paymentMethod !== "COD") {
-      const rzp = await getRazorpay();
-      const rzpOrder = await rzp.orders.create({
-        amount: Math.round(total * 100), // paise
-        currency: "INR",
-        receipt: generateOrderNumber(),
-      });
-      razorpayOrderId = rzpOrder.id;
     }
 
     // Create order in DB
@@ -103,8 +117,7 @@ export async function POST(req: NextRequest) {
         gst,
         total,
         paymentMethod: data.paymentMethod,
-        paymentStatus: data.paymentMethod === "COD" ? "PENDING" : "PENDING",
-        razorpayOrderId,
+        paymentStatus: "PENDING",
         couponCode: data.couponCode,
         shippingAddressId,
         items: {
@@ -170,8 +183,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       order: { id: order.id, orderNumber: order.orderNumber, total: order.total },
-      razorpayOrderId,
-      razorpayKeyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     });
   } catch (err) {
     console.error("Order creation failed:", err);

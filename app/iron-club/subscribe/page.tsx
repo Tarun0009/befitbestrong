@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/store/Navbar";
 import Footer from "@/components/store/Footer";
 import Link from "next/link";
-import { Check, Loader2, Zap } from "lucide-react";
+import { Check, Loader2, Zap, Clock } from "lucide-react";
 
 type Plan = "MONTHLY" | "QUARTERLY" | "ANNUAL";
 
@@ -59,9 +59,7 @@ export default function SubscribePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [selected, setSelected] = useState<Plan>("QUARTERLY");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -79,28 +77,6 @@ export default function SubscribePage() {
         <Footer />
       </div>
     );
-  }
-
-  async function handleSubscribe() {
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: selected }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Failed to subscribe");
-        return;
-      }
-      setSuccess(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
   }
 
   if (success) {
@@ -227,26 +203,31 @@ export default function SubscribePage() {
             </span>
           </p>
 
-          {error && (
-            <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg px-4 py-3 text-sm text-center">
-              {error}
+          {/* 🚧 Coming Soon notice */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-3 bg-[#FF5500]/10 border border-[#FF5500]/20 rounded-xl px-6 py-4 text-center max-w-md">
+              <Clock className="w-5 h-5 text-[#FF5500] shrink-0" />
+              <div className="text-left">
+                <p className="text-[#F2F2F7] font-semibold text-sm">Online payments launching soon</p>
+                <p className="text-[#8E8E93] text-xs mt-0.5">We're integrating Razorpay — Iron Club memberships will go live shortly. Stay tuned!</p>
+              </div>
             </div>
-          )}
 
-          <div className="flex justify-center">
             <button
-              onClick={handleSubscribe}
-              disabled={loading}
-              className="inline-flex items-center gap-2 bg-[#FF5500] hover:bg-[#CC4400] text-white font-bold uppercase tracking-widest px-10 py-4 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled
+              className="inline-flex items-center gap-2 bg-[#FF5500]/40 text-white/60 font-bold uppercase tracking-widest px-10 py-4 rounded cursor-not-allowed"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? "Activating..." : "Subscribe Now"}
+              <Clock className="w-4 h-4" />
+              Coming Soon
             </button>
-          </div>
 
-          <p className="text-center text-[#8E8E93] text-xs mt-4">
-            Cancel or pause anytime from your account.
-          </p>
+            <p className="text-[#8E8E93] text-xs">
+              Want to be notified?{" "}
+              <Link href="/account" className="text-[#FF5500] hover:underline">
+                Save your plan preference in your account.
+              </Link>
+            </p>
+          </div>
         </section>
       </main>
 

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Dumbbell, ArrowLeft, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 import SubscriptionActions from "@/components/account/SubscriptionActions";
 
@@ -32,25 +32,8 @@ export default async function SubscriptionsPage() {
   const active = subscriptions.find((s) => s.status === "ACTIVE");
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Header */}
-      <header className="bg-[#1C1C1E] border-b border-[#2C2C2E] px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 text-[#FF5500]" />
-            <span className="font-(family-name:--font-bebas-neue) text-xl tracking-wider">BeFitBeStrong</span>
-          </Link>
-          <Link
-            href="/account"
-            className="text-[#8E8E93] hover:text-[#F2F2F7] text-sm transition-colors flex items-center gap-1.5"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Account
-          </Link>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="max-w-2xl">
+      <div>
         <h1 className="font-(family-name:--font-bebas-neue) text-4xl text-[#F2F2F7] tracking-wide mb-8">
           My Subscriptions
         </h1>

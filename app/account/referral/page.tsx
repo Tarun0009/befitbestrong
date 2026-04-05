@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, Check, Gift, Users } from "lucide-react";
+import { Copy, Check, Gift, Users } from "lucide-react";
 
 interface ReferralData {
   referral: {
@@ -34,22 +34,18 @@ export default function ReferralPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="w-6 h-6 border-2 border-[#FF5500] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <div className="max-w-xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/account" className="text-[#8E8E93] hover:text-[#FF5500] transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="font-(family-name:--font-bebas-neue) text-2xl text-[#F2F2F7] tracking-wide">
-            Refer & Earn
-          </h1>
+    <div className="max-w-xl">
+      <div>
+        <h1 className="font-(family-name:--font-bebas-neue) text-3xl text-[#F2F2F7] tracking-wide mb-6">
+          Refer &amp; Earn
+        </h1>
         </div>
 
         {/* Hero card */}
@@ -135,7 +131,6 @@ export default function ReferralPage() {
             </div>
           ))}
         </div>
-      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShoppingCart, Search, User, Menu, X, Dumbbell } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/components/Providers";
 
 const categories = [
   { name: "Equipment", href: "/products?category=equipment" },
@@ -13,7 +14,8 @@ const categories = [
   { name: "Programs", href: "/products?category=programs" },
 ];
 
-export default function Navbar({ cartCount = 0 }: { cartCount?: number }) {
+export default function Navbar() {
+  const { cartCount } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

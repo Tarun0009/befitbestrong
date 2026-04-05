@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, MapPin } from "lucide-react";
+import { Plus, Trash2, MapPin } from "lucide-react";
 
 interface Address {
   id: string;
@@ -71,31 +70,25 @@ export default function AddressesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="w-6 h-6 border-2 border-[#FF5500] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Link href="/account" className="text-[#8E8E93] hover:text-[#FF5500] transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="font-(family-name:--font-bebas-neue) text-2xl text-[#F2F2F7] tracking-wide">
-              Saved Addresses
-            </h1>
-          </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 bg-[#FF5500] hover:bg-[#CC4400] text-white text-sm font-bold uppercase tracking-widest px-4 py-2 rounded transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Add New
-          </button>
-        </div>
+    <div className="max-w-2xl">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-(family-name:--font-bebas-neue) text-3xl text-[#F2F2F7] tracking-wide">
+          Saved Addresses
+        </h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1.5 bg-[#FF5500] hover:bg-[#CC4400] text-white text-sm font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Add New
+        </button>
+      </div>
 
         {/* Add form */}
         {showForm && (
@@ -184,7 +177,7 @@ export default function AddressesPage() {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 }
+

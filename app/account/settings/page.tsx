@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Download, Trash2, AlertTriangle } from "lucide-react";
+import { Download, Trash2, AlertTriangle } from "lucide-react";
 
 export default function AccountSettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -50,21 +50,8 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Header */}
-      <header className="bg-[#1C1C1E] border-b border-[#2C2C2E] px-4 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link
-            href="/account"
-            className="inline-flex items-center gap-2 text-[#8E8E93] hover:text-[#F2F2F7] text-sm transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Account
-          </Link>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
+    <div className="max-w-2xl">
+      <div className="space-y-8">
         <h1 className="font-(family-name:--font-bebas-neue) text-4xl text-[#F2F2F7] tracking-wide">
           Account Settings
         </h1>

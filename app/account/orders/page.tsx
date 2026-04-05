@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, ChevronRight } from "lucide-react";
+import { Package, ChevronRight } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
@@ -33,16 +33,11 @@ export default async function OrdersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/account" className="text-[#8E8E93] hover:text-[#FF5500] transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="font-(family-name:--font-bebas-neue) text-2xl text-[#F2F2F7] tracking-wide">
-            My Orders
-          </h1>
-        </div>
+    <div className="max-w-3xl">
+      <h1 className="font-(family-name:--font-bebas-neue) text-3xl text-[#F2F2F7] tracking-wide mb-6">
+        My Orders
+      </h1>
+      <div>
 
         {orders.length === 0 ? (
           <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-2xl p-12 text-center">

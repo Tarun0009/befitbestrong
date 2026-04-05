@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import Navbar from "@/components/store/Navbar";
 import Footer from "@/components/store/Footer";
-import AddToCartButton from "@/components/store/AddToCartButton";
 import ReviewSection from "@/components/store/ReviewSection";
+import VariantSelector from "@/components/store/VariantSelector";
 import { formatPrice, getDiscountPercentage } from "@/lib/utils";
 import { Star, Truck, RotateCcw, Shield, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -132,54 +132,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             )}
 
-            {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span className="price-tag text-4xl">{formatPrice(displayPrice, { compact: true })}</span>
-              {discount > 0 && (
-                <>
-                  <span className="price-original text-xl">{formatPrice(comparePrice, { compact: true })}</span>
-                  <span className="badge-orange">{discount}% OFF</span>
-                </>
-              )}
-            </div>
-
-            <p className="text-[#8E8E93] text-sm">
-              or 3× <span className="text-[#F2F2F7] font-medium">{formatPrice(Math.round(displayPrice / 3), { compact: true })}</span>{" "}
-              with EMI | No-cost EMI available
-            </p>
-
-            {/* Variants */}
-            {product.variants.length > 1 && (
-              <div>
-                <p className="text-[#8E8E93] text-xs uppercase tracking-widest font-bold mb-2">Select Variant</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((v) => (
-                    <button key={v.id} disabled={v.stockQuantity === 0}
-                      className={`px-4 py-2 rounded border text-sm font-medium transition-colors ${
-                        v.stockQuantity === 0
-                          ? "border-[#2C2C2E] text-[#8E8E93] cursor-not-allowed opacity-50"
-                          : "border-[#2C2C2E] text-[#F2F2F7] hover:border-[#FF5500]"
-                      }`}>
-                      {[v.option1Value, v.option2Value].filter(Boolean).join(" · ") || "Default"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Stock */}
-            {totalStock > 0 && totalStock <= 5 && (
-              <p className="text-[#C0392B] text-sm font-medium animate-pulse">⚡ Only {totalStock} left!</p>
-            )}
-            {totalStock === 0 && (
-              <p className="text-[#C0392B] text-sm font-medium">Out of stock</p>
-            )}
-
-            {/* Add to Cart */}
-            <AddToCartButton
-              productId={product.id}
-              variantId={firstVariant?.id ?? ""}
-              inStock={totalStock > 0}
+            {/* Variant selector — handles price, selection state, stock, add to cart */}
+            <VariantSelector
+              variants={product.variants.map((v) => ({
+                id: v.id,
+                option1Value: v.option1Value,
+                option2Value: v.option2Value,
+                price: Number(v.price),
+                compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
+                stockQuantity: v.stockQuantity,
+                sku: v.sku,
+              }))}
+              basePrice={Number(product.basePrice)}
             />
 
             {/* Trust icons */}
