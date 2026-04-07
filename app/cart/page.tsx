@@ -28,7 +28,9 @@ const FREE_SHIPPING_THRESHOLD = 2999;
 export default function CartPage() {
   const [cart, setCart] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponApplied, setCouponApplied] = useState<{ code: string; discount: number } | null>(null);
@@ -41,7 +43,10 @@ export default function CartPage() {
       if (res.ok) {
         const data = await res.json();
         setCart(data.cart);
+        setNetworkError(false);
       }
+    } catch {
+      setNetworkError(true);
     } finally {
       setLoading(false);
     }
@@ -51,22 +56,36 @@ export default function CartPage() {
 
   async function updateQty(itemId: string, qty: number) {
     setUpdating(itemId);
-    await fetch(`/api/cart/items/${itemId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quantity: qty }),
-    });
-    await fetchCart();
-    refreshCart();
-    setUpdating(null);
+    setMutationError(null);
+    try {
+      const res = await fetch(`/api/cart/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: qty }),
+      });
+      if (!res.ok) setMutationError("Failed to update quantity. Please try again.");
+      await fetchCart();
+      refreshCart();
+    } catch {
+      setMutationError("Connection lost. Please check your internet and try again.");
+    } finally {
+      setUpdating(null);
+    }
   }
 
   async function removeItem(itemId: string) {
     setUpdating(itemId);
-    await fetch(`/api/cart/items/${itemId}`, { method: "DELETE" });
-    await fetchCart();
-    refreshCart();
-    setUpdating(null);
+    setMutationError(null);
+    try {
+      const res = await fetch(`/api/cart/items/${itemId}`, { method: "DELETE" });
+      if (!res.ok) setMutationError("Failed to remove item. Please try again.");
+      await fetchCart();
+      refreshCart();
+    } catch {
+      setMutationError("Connection lost. Please check your internet and try again.");
+    } finally {
+      setUpdating(null);
+    }
   }
 
   async function validateCoupon() {
@@ -95,8 +114,41 @@ export default function CartPage() {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-[#FF5500] animate-spin" />
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          <div className="h-10 w-40 bg-[#1C1C1E] rounded animate-pulse mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-[#1C1C1E] rounded-xl p-4 flex gap-4 animate-pulse">
+                  <div className="w-20 h-20 bg-[#2C2C2E] rounded-lg shrink-0" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-4 bg-[#2C2C2E] rounded w-3/4" />
+                    <div className="h-4 bg-[#2C2C2E] rounded w-1/2" />
+                    <div className="h-4 bg-[#2C2C2E] rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-[#1C1C1E] rounded-2xl p-6 h-64 animate-pulse" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (networkError) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center gap-4 py-20">
+          <p className="text-[#8E8E93] text-center">Could not load your cart. Check your connection.</p>
+          <button
+            onClick={fetchCart}
+            className="bg-[#FF5500] hover:bg-[#CC4400] text-white font-bold uppercase tracking-widest px-6 py-3 rounded text-sm transition-colors"
+          >
+            Retry
+          </button>
         </main>
         <Footer />
       </div>
@@ -140,6 +192,12 @@ export default function CartPage() {
         <h1 className="font-(family-name:--font-bebas-neue) text-4xl text-[#F2F2F7] tracking-wide mb-8">
           Your Cart ({items.length} {items.length === 1 ? "item" : "items"})
         </h1>
+
+        {mutationError && (
+          <div className="mb-4 bg-[#C0392B]/10 border border-[#C0392B]/30 text-[#C0392B] text-sm px-4 py-3 rounded-lg">
+            {mutationError}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Items */}
