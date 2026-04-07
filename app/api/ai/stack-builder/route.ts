@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 import Anthropic from "@anthropic-ai/sdk";
 
 function getAnthropic() {
@@ -6,6 +8,16 @@ function getAnthropic() {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const ip = req.headers.get("x-forwarded-for") ?? "anon";
+  if (!checkRateLimit(`stack-builder:${session.user.id}:${ip}`, 5, 60_000)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
+  }
+
   const body = await req.json();
   const { goal, dietaryRestrictions, monthlyBudget, supplementExperience } = body;
 
@@ -33,6 +45,7 @@ Return ONLY a JSON array of supplement recommendations with no other text. Each 
 
 Provide 5-8 supplements that fit within the budget and respect dietary restrictions. Use Indian Rupee pricing (₹) based on Indian market rates. Prioritize safety and effectiveness.`;
 
+  try {
   const message = await getAnthropic().messages.create({
     model: "claude-opus-4-6",
     max_tokens: 2048,
@@ -65,4 +78,8 @@ Provide 5-8 supplements that fit within the budget and respect dietary restricti
   }
 
   return NextResponse.json({ stack });
+  } catch (err) {
+    console.error("[stack-builder]", err);
+    return NextResponse.json({ error: "AI service error" }, { status: 500 });
+  }
 }

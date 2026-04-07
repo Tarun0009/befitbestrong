@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import OfflineBanner from "@/components/store/OfflineBanner";
 
 // ─── Cart Context ────────────────────────────────────────────────────────────
 interface CartCtx {
@@ -44,7 +45,10 @@ function CartProvider({ children }: { children: ReactNode }) {
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
-      <CartProvider>{children}</CartProvider>
+      <CartProvider>
+        <OfflineBanner />
+        {children}
+      </CartProvider>
     </SessionProvider>
   );
 }

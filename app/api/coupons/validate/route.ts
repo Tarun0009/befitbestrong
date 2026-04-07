@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { z } from "zod";
 
 const schema = z.object({
@@ -8,6 +9,12 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "anon";
+  if (!checkRateLimit(`coupon:${ip}`, 10, 60_000)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  try {
   const body = await req.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
@@ -59,4 +66,7 @@ export async function POST(req: NextRequest) {
     discount,
     description,
   });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
